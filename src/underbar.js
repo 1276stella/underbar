@@ -208,6 +208,16 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (iterator === undefined) {
+      iterator = _.identity;
+    }
+    return _.reduce(collection, function(accumulator, value) {
+      if (Boolean(iterator(value))) {
+        return accumulator || true;
+      } else {
+        return accumulator || false;
+      }
+    }, false);
   };
 
 
@@ -230,11 +240,29 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var l = arguments.length;
+    for (var i = 1; i < l; i++) {
+      var obj2 = arguments[i];
+      for (var prop in obj2) {
+        obj[prop] = obj2[prop];
+      }
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var l = arguments.length;
+    for (var i = 1; i < l; i++) {
+      var obj2 = arguments[i];
+      for (var prop in obj2) {
+        if (!(prop in obj)) {
+          obj[prop] = obj2[prop];
+        }
+      }
+    }
+    return obj;  
   };
 
 
@@ -278,6 +306,17 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var map = {};
+    var result;
+    return function() {
+      if (!(arguments[0] in map)) {
+        result = func.apply(this, arguments);
+        map[arguments[0]] = result;
+        return result;
+      } else {
+        return map[arguments[0]];
+      }
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -287,6 +326,8 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    setTimeout(function() {func.apply(this, args);}, wait);
   };
 
 
@@ -300,7 +341,16 @@
   // TIP: This function's test suite will ask that you not modify the original
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
+  // Jia's comment: The modern version of the Fisher-Yates shuffle.
   _.shuffle = function(array) {
+    var newArray = array.slice();
+    for (var currentInd = array.length - 1; currentInd > 0; currentInd--) {
+      var randomInd = Math.floor(Math.random() * currentInd);
+      var temp = newArray[currentInd];
+      newArray[currentInd] = newArray[randomInd];
+      newArray[randomInd] = temp;
+    }
+    return newArray;
   };
 
 
